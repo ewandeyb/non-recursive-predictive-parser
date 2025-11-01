@@ -7,7 +7,7 @@ class ProductionRule:
     """Class for keeping track of a production rule."""
 
     name: str
-    rule: list[None | str]
+    rule: list[str]
 
     @staticmethod
     def from_prod_string(prod_string: str) -> "ProductionRule":
@@ -26,7 +26,7 @@ class ProductionRule:
 
 def load_prod_rules(path: str | Path) -> list[ProductionRule]:
     p = Path(path)
-    prod_rules: list[ProductionRule] = [None]
+    prod_rules: list[ProductionRule | None] = [None]
     with p.open("r", encoding="utf-8") as f:
         for raw in f:
             line = raw.strip()
