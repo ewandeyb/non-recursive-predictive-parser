@@ -8,12 +8,12 @@ from parsers.production_rules import ProductionRule
 class ParseTable:
     table: dict[str, dict[str, int]]
     terminals: list[str]
-    rules: list[ProductionRule]
+    rules: list[ProductionRule | None]
 
     def __init__(
         self,
         pbtl_ptr: TextIO,
-        prod_rules: list[ProductionRule],
+        prod_rules: list[ProductionRule | None],
     ) -> None:
         self.table = load_parse_table(pbtl_ptr)
         self.terminals = get_terminals(pbtl_ptr)
