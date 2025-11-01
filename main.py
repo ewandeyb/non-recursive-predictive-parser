@@ -1,5 +1,9 @@
+from parsers import production_rules
+
+
 def main():
-    print("Hello from non-recursive-predictive-parser!")
+    parsed = production_rules.load_prod_rules("rules.prod")
+    print(parsed)
 
 
 if __name__ == "__main__":
