@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 
 @dataclass
@@ -21,7 +20,7 @@ class ProductionRule:
         name = parts[1]
         rhs = parts[2]
 
-        rule_tokens: List[str] = [tok for tok in rhs.split() if tok]
+        rule_tokens: list[str] = [tok for tok in rhs.split() if tok]
         return ProductionRule(name=name, rule=rule_tokens)
 
 
