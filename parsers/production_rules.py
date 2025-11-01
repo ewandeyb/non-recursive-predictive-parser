@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TextIO
 
 
 @dataclass
@@ -24,13 +24,11 @@ class ProductionRule:
         return ProductionRule(name=name, rule=rule_tokens)
 
 
-def load_prod_rules(path: str | Path) -> list[ProductionRule]:
-    p = Path(path)
+def load_prod_rules(stream: TextIO) -> list[ProductionRule | None]:
     prod_rules: list[ProductionRule | None] = [None]
-    with p.open("r", encoding="utf-8") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line:
-                continue
-            prod_rules.append(ProductionRule.from_prod_string(line))
+    for raw in stream:
+        line = raw.strip()
+        if not line:
+            continue
+        prod_rules.append(ProductionRule.from_prod_string(line))
     return prod_rules

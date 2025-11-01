@@ -1,9 +1,5 @@
-from parsers import production_rules
-
-
 def main():
-    parsed = production_rules.load_prod_rules("rules.prod")
-    print(parsed)
+    pass
 
 
 if __name__ == "__main__":
