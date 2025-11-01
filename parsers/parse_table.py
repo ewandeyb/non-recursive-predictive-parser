@@ -1,4 +1,23 @@
+from dataclasses import dataclass
 from typing import TextIO
+
+from parsers.production_rules import ProductionRule
+
+
+@dataclass
+class ParseTable:
+    table: dict[str, dict[str, int]]
+    terminals: list[str]
+    rules: list[ProductionRule]
+
+    def __init__(
+        self,
+        pbtl_ptr: TextIO,
+        prod_rules: list[ProductionRule],
+    ) -> None:
+        self.table = load_parse_table(pbtl_ptr)
+        self.terminals = get_terminals(pbtl_ptr)
+        self.rules = prod_rules
 
 
 def load_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
@@ -15,6 +34,7 @@ def load_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
     }
     """
 
+    ptbl.seek(0)  # Reset pointer to the beginning
     parse_table: dict[str, dict[str, int]] = {}
     # Extract headers
     headers = (
@@ -37,3 +57,12 @@ def load_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
                     )
 
     return parse_table
+
+
+def get_terminals(ptbl: TextIO) -> list[str]:
+    """Extracts the list of terminals from the parse table file pointer."""
+    ptbl.seek(0)  # Reset pointer to the beginning
+    terminals = (
+        ptbl.readline().strip().split(",")[1:]
+    )  # Skip the first empty cell
+    return terminals
