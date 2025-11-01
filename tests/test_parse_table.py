@@ -1,9 +1,9 @@
 import io
 
-from parsers.parse_table import create_parse_table
+from parsers.parse_table import load_parse_table
 
 
-def test_create_parse_table():
+def test_load_parse_table():
     csv_content = """,id,+,*,(,),$
                     E,1,,,1,,
                     E’,,2,,,3,3
@@ -21,5 +21,5 @@ def test_create_parse_table():
         "F": {"id": 8, "(": 7},
     }
 
-    result = create_parse_table(ptbl)
+    result = load_parse_table(ptbl)
     assert result == expected_parse_table

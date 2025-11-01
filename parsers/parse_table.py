@@ -1,7 +1,7 @@
 from typing import TextIO
 
 
-def create_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
+def load_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
     """Creates a parse table from a given file pointer.
 
     Format of return:
