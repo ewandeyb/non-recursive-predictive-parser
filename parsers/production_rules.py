@@ -8,7 +8,7 @@ class ProductionRule:
     """Class for keeping track of a production rule."""
 
     name: str
-    rule: list[str]
+    rule: list[None | str]
 
     @staticmethod
     def from_prod_string(prod_string: str) -> "ProductionRule":
