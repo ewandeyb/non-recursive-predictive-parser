@@ -29,6 +29,11 @@ def load_parse_table(ptbl: TextIO) -> dict[str, dict[str, int]]:
         for i, entry in enumerate(parts[1:]):
             terminal = headers[i]
             if entry:
-                parse_table[non_terminal][terminal] = int(entry)
+                try:
+                    parse_table[non_terminal][terminal] = int(entry)
+                except ValueError:
+                    raise ValueError(
+                        f"Invalid integer value '{entry}' for non-terminal '{non_terminal}', terminal '{terminal}'"
+                    )
 
     return parse_table
