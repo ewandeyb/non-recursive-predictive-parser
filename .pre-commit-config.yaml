@@ -1,0 +1,22 @@
+repos:
+  # --- Ruff (linter and formatter) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix] # auto-fix lint issues
+      - id: ruff-format # Ruff's built-in formatter (Black-compatible)
+
+  # --- Black (optional if not using ruff-format) ---
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+        args: [--line-length=80]
+
+  # --- isort: import sorter ---
+  - repo: https://github.com/PyCQA/isort
+    rev: 7.0.0
+    hooks:
+      - id: isort
+        args: [--profile=black, --filter-files]
