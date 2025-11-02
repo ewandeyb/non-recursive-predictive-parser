@@ -3,7 +3,7 @@ import tkinter.filedialog as fd
 from pathlib import Path
 from tkinter import ttk
 
-from output_handling import create_file, create_parsing_steps_table
+from output_handling import create_parsing_steps_table
 from panels.input_panel import InputPanel
 from panels.load_file import LoadFileWidget
 from panels.parse_table_panel import ParseTablePanel
@@ -130,7 +130,7 @@ class ParserApp(tk.Tk):
         for row in seq:
             self.trace.append(*row)
 
-        create_file(seq, self.file_name.rstrip(".prod"))
+        # create_file(seq, self.file_name.rstrip(".prod"))
 
 
 def main():
