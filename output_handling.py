@@ -39,6 +39,8 @@ def create_parsing_steps_table(
         List[Dict[str, Any]]: A list of dictionaries representing each step in the parsing process.
     """
     steps = []
+
+    assert parse_table.rules[1]  # type check
     stack = ["$", parse_table.rules[1].name]
     input_buffer = ["$"] + input_string.split()[::-1]
 
@@ -59,6 +61,8 @@ def create_parsing_steps_table(
             if terminal in parse_table.table[top_stack]:
                 rule_index = parse_table.table[top_stack][terminal]
                 production_rule = parse_table.rules[rule_index]
+
+                assert production_rule  # type check
                 action = f"Output {production_rule.name} > {' '.join(production_rule.rule) if production_rule.rule else 'e'}"
 
                 for symbol in reversed(production_rule.rule):

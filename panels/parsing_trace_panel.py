@@ -16,7 +16,7 @@ class ParsingTracePanel(ttk.Frame):
             self.tree.column(c, width=160, anchor="w")
 
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscroll=vsb.set)
+        self.tree.configure(yscrollcommand=vsb.set)
 
         self.tree.grid(row=0, column=0, sticky="nsew")
         vsb.grid(row=0, column=1, sticky="ns")

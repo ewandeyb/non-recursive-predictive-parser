@@ -1,72 +1,30 @@
 import tkinter as tk
+import tkinter.filedialog as fd
+from pathlib import Path
 from tkinter import ttk
 
-from panels import (
-    InputPanel,
-    ParseTablePanel,
-    ParsingTracePanel,
-    ProductionsPanel,
-    TopBar,
-)
-
-SAMPLE_PRODUCTIONS = [
-    (1, "E", "T E'"),
-    (2, "E'", "+ T E'"),
-    (3, "E'", "ε"),
-    (4, "T", "F T'"),
-    (5, "T'", "* F T'"),
-    (6, "T'", "ε"),
-    (7, "F", "( E )"),
-    (8, "F", "id"),
-]
-
-SAMPLE_PARSE_TABLE = [
-    ("E", "1", "", "", "1", "", ""),
-    ("E'", "", "2", "", "3", "3", ""),
-    ("T", "4", "", "", "4", "", ""),
-    ("T'", "", "6", "5", "6", "6", ""),
-    ("F", "8", "", "", "7", "", ""),
-]
+from output_handling import create_file, create_parsing_steps_table
+from panels.input_panel import InputPanel
+from panels.load_file import LoadFileWidget
+from panels.parse_table_panel import ParseTablePanel
+from panels.parsing_trace_panel import ParsingTracePanel
+from panels.productions_panel import ProductionsPanel
 
 
 class ParserApp(tk.Tk):
+    NO_FILE = "No file loaded yet."
+
     def __init__(self):
         super().__init__()
         self.title("Non-Recursive Predictive Parser - Example")
         self.geometry("1000x700")
 
-        # Left: productions
-        self.prods = ProductionsPanel(self, relief="sunken")
-        self.prods.grid(
-            row=0, column=0, rowspan=2, sticky="nsew", padx=8, pady=8
-        )
-        self.prods.set_productions(SAMPLE_PRODUCTIONS)
+        self.file_name = self.NO_FILE
 
-        # Right top: parse table and topbar stacked
-        topframe = ttk.Frame(self)
-        topframe.grid(row=0, column=1, sticky="nsew", padx=8, pady=8)
-        topframe.columnconfigure(0, weight=1)
-
-        self.topbar = TopBar(
-            topframe, load_command=self._on_load, parse_command=self._on_parse
-        )
-        self.topbar.grid(row=0, column=0, sticky="ew")
-
-        self.parse_table = ParseTablePanel(topframe)
-        self.parse_table.grid(row=1, column=0, sticky="nsew", pady=(8, 0))
-        self.parse_table.set_table(SAMPLE_PARSE_TABLE)
-
-        # Middle: input
-        self.input_panel = InputPanel(self, parse_command=self._on_input_parse)
-        self.input_panel.grid(
-            row=2, column=0, columnspan=2, sticky="ew", padx=8, pady=(0, 8)
-        )
-
-        # Bottom: parsing trace
-        self.trace = ParsingTracePanel(self, relief="sunken")
-        self.trace.grid(
-            row=3, column=0, columnspan=2, sticky="nsew", padx=8, pady=8
-        )
+        self._init_production_rules()  # top left
+        self._init_parse_table()  # top right
+        self._init_input_panel()  # middle
+        self._init_parse_trace()  # bottom
 
         # grid weight
         self.columnconfigure(0, weight=0)
@@ -75,29 +33,104 @@ class ParserApp(tk.Tk):
         self.rowconfigure(1, weight=1)
         self.rowconfigure(3, weight=1)
 
-        # seed example trace
-        self._seed_trace()
+    def _init_production_rules(self):
+        # Left: productions
+        self.production_table = ProductionsPanel(self, relief="sunken")
+        self.production_table.grid(
+            row=0, column=0, rowspan=2, sticky="nsew", padx=8, pady=8
+        )
 
-    def _seed_trace(self):
-        # Add a few example rows similar to the attachment's trace
-        rows = [
-            ("E $", "id + id * id $", "Output E > T E'"),
-            ("T E' $", "id + id * id $", "Output T > F T'"),
-            ("F T' E' $", "id + id * id $", "Output F > id"),
-        ]
-        for s, i, a in rows:
-            self.trace.append(s, i, a)
+    def _init_parse_table(self):
+        # Right top: parse table and load file stacked
+        topframe = ttk.Frame(self)
+        topframe.grid(row=0, column=1, sticky="nsew", padx=8, pady=8)
+        topframe.columnconfigure(0, weight=1)
+
+        self.parse_table = ParseTablePanel(topframe)
+        self.parse_table.grid(row=0, column=0, sticky="nsew", pady=(8, 0))
+
+        self.load_file = LoadFileWidget(topframe, load_command=self._on_load)
+        self.load_file.grid(row=1, column=0, sticky="ew")
+        self.load_file.update_filename(self.file_name)
+
+    def _init_input_panel(self):
+        # Middle: input
+        self.input_panel = InputPanel(self, parse_command=self._on_input_parse)
+        self.input_panel.grid(
+            row=2, column=0, columnspan=2, sticky="ew", padx=8, pady=(0, 8)
+        )
+
+    def _init_parse_trace(self):
+        # Bottom: parsing trace
+        self.trace = ParsingTracePanel(self, relief="sunken")
+        self.trace.grid(
+            row=3,
+            column=0,
+            columnspan=2,
+            sticky="nsew",
+            padx=8,
+            pady=8,
+        )
 
     def _on_load(self):
-        # placeholder: in a full app this would open and read rules.prod
-        self.topbar.loaded_label.config(text="LOADED: rules.prod (sample)")
+        """
+        Open a `.prod` file and look for the corresponding `.ptbl` file in the
+        same directory and store its pointers.
+        """
+        prod_stream = fd.askopenfile(
+            "r",
+            defaultextension=".prod",
+            filetypes=[("Production rules files", "*.prod")],
+        )
 
-    def _on_parse(self):
-        # when top-right Parse is pressed, just append a marker
-        self.trace.append("$", "$", "Parse (topbar)")
+        # if no file selected
+        if prod_stream is None:
+            return
 
-    def _on_input_parse(self, text):
-        self.trace.append(text, "$", f"Parse input: {text}")
+        prod_path = Path(prod_stream.name)
+        ptbl_path = prod_path.parent / (prod_path.stem + ".ptbl")
+
+        # if .ptbl not found
+        if not ptbl_path.is_file():
+            self.file_name = self.NO_FILE
+            self.load_file.update_filename(
+                (
+                    self.NO_FILE
+                    + f" (No corresponding `.ptbl` found for {prod_path.name})"
+                )
+            )
+            return
+
+        self.file_name = prod_path.name
+        ptbl_stream = ptbl_path.open("r")
+
+        self.production_table.load_productions(prod_stream)
+        self.production_table.set_productions()
+
+        self.parse_table.load_table(
+            ptbl_stream,
+            self.production_table.productions,
+        )
+        self.parse_table.set_table()
+
+        self.load_file.update_filename(self.file_name)
+
+    def _on_input_parse(self):
+        self.trace.clear()
+
+        if getattr(self.production_table, "productions", None) is None:
+            self.trace.append("", "$", "ERROR: No production table found.")
+            return
+
+        input_text = self.input_panel.get_text().strip()
+        seq = create_parsing_steps_table(
+            self.parse_table.parse_table, input_text
+        )
+
+        for row in seq:
+            self.trace.append(*row)
+
+        create_file(seq, self.file_name.rstrip(".prod"))
 
 
 def main():
