@@ -24,14 +24,22 @@ class ParserApp(tk.Tk):
         self._init_production_rules()  # top left
         self._init_parse_table()  # top right
         self._init_input_panel()  # middle
+        self._init_result_panel()  # under input panel
         self._init_parse_trace()  # bottom
 
         # grid weight
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
+        # row 0: productions / parse table header (fixed)
         self.rowconfigure(0, weight=0)
+        # row 1: parse table content (stretch)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(3, weight=1)
+        # row 2: input panel (fixed)
+        self.rowconfigure(2, weight=0)
+        # row 3: result label (fixed)
+        self.rowconfigure(3, weight=0)
+        # row 4: parsing trace (stretch)
+        self.rowconfigure(4, weight=1)
 
     def _init_production_rules(self):
         # Left: productions
@@ -60,11 +68,27 @@ class ParserApp(tk.Tk):
             row=2, column=0, columnspan=2, sticky="ew", padx=8, pady=(0, 8)
         )
 
+    def _init_result_panel(self):
+        # Under input: result label
+        self.result_label = ttk.Label(
+            self,
+            text="PARSING:",
+            font=("TkDefaultFont", 12, "bold"),
+        )
+        self.result_label.grid(
+            row=3,
+            column=0,
+            columnspan=2,
+            sticky="w",
+            padx=8,
+            pady=(0, 0),
+        )
+
     def _init_parse_trace(self):
         # Bottom: parsing trace
         self.trace = ParsingTracePanel(self, relief="sunken")
         self.trace.grid(
-            row=3,
+            row=4,
             column=0,
             columnspan=2,
             sticky="nsew",
@@ -130,7 +154,25 @@ class ParserApp(tk.Tk):
         for row in seq:
             self.trace.append(*row)
 
-        create_file(seq, self.file_name.rstrip(".prod"))
+        # write output file
+        output_basename = self.file_name.rstrip(".prod")
+        create_file(seq, output_basename)
+        # determine parsing result by looking at the last non-empty action.
+        last_action = ""
+        for step in reversed(seq):
+            a = (step[2] or "").strip()
+            if a:
+                last_action = a
+                break
+
+        if last_action == "Match $":
+            out_filename = f"test_{output_basename}.prsd"
+            self.result_label.config(
+                text=f"Valid. Please see the {out_filename}"
+            )
+        else:
+            reason = last_action or "Unknown error"
+            self.result_label.config(text=f"INVALID: {reason}")
 
 
 def main():
