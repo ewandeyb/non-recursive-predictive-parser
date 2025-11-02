@@ -1,23 +1,17 @@
-from dataclasses import dataclass
 from typing import TextIO
 
 from parsers.production_rules import ProductionRule
 
 
-@dataclass
 class ParseTable:
-    table: dict[str, dict[str, int]]
-    terminals: list[str]
-    rules: list[ProductionRule | None]
-
     def __init__(
         self,
         pbtl_ptr: TextIO,
         prod_rules: list[ProductionRule | None],
     ) -> None:
-        self.terminals = self.get_terminals(pbtl_ptr)
-        self.table = self.load_parse_table(pbtl_ptr)
-        self.rules = prod_rules
+        self.terminals: list[str] = self.get_terminals(pbtl_ptr)
+        self.table: dict[str, dict[str, int]] = self.load_parse_table(pbtl_ptr)
+        self.rules: list[ProductionRule | None] = prod_rules
 
     def load_parse_table(self, ptbl: TextIO) -> dict[str, dict[str, int]]:
         """Creates a parse table from a given file pointer.
