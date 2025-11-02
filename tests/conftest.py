@@ -11,12 +11,12 @@ from parsers.production_rules import ProductionRule
 def production_rules():
     return [
         None,
-        ProductionRule(name="E", rule=["T", "E’"]),
-        ProductionRule(name="E’", rule=["+", "T", "E’"]),
-        ProductionRule(name="E’", rule=["e"]),
-        ProductionRule(name="T", rule=["F", "T’"]),
-        ProductionRule(name="T’", rule=["*", "F", "T’"]),
-        ProductionRule(name="T’", rule=["e"]),
+        ProductionRule(name="E", rule=["T", "E'"]),
+        ProductionRule(name="E'", rule=["+", "T", "E'"]),
+        ProductionRule(name="E'", rule=["e"]),
+        ProductionRule(name="T", rule=["F", "T'"]),
+        ProductionRule(name="T'", rule=["*", "F", "T'"]),
+        ProductionRule(name="T'", rule=["e"]),
         ProductionRule(name="F", rule=["(", "E", ")"]),
         ProductionRule(name="F", rule=["id"]),
     ]
@@ -28,11 +28,10 @@ def parse_table(production_rules):
         """\
         ,id,+,*,(,),$
         E,1,,,1,,
-        E’,,2,,,3,3
+        E',,2,,,3,3
         T,4,,,4,,
-        T’,,6,5,,6,6
+        T',,6,5,,6,6
         F,8,,,7,,"""
     )
-
     ptbl = io.StringIO(csv_content)
     return ParseTable(ptbl, prod_rules=production_rules)

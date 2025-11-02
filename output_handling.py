@@ -39,6 +39,8 @@ def create_parsing_steps_table(
         List[Dict[str, Any]]: A list of dictionaries representing each step in the parsing process.
     """
     steps = []
+
+    assert parse_table.rules[1]  # type check
     stack = ["$", parse_table.rules[1].name]
     input_buffer = ["$"] + input_string.split()[::-1]
 
@@ -59,6 +61,8 @@ def create_parsing_steps_table(
             if terminal in parse_table.table[top_stack]:
                 rule_index = parse_table.table[top_stack][terminal]
                 production_rule = parse_table.rules[rule_index]
+
+                assert production_rule  # type check
                 action = f"Output {production_rule.name} > {' '.join(production_rule.rule) if production_rule.rule else 'e'}"
 
                 for symbol in reversed(production_rule.rule):
@@ -68,9 +72,15 @@ def create_parsing_steps_table(
                 action = (
                     f"Error: No rule for {top_stack} with lookahead {terminal}"
                 )
+                current_stack = " ".join(reversed(stack))
+                current_input = " ".join(reversed(input_buffer))
+                steps.append([current_stack, current_input, action])
                 break
         else:
             action = f"Error: Unexpected symbol {top_stack}"
+            current_stack = " ".join(reversed(stack))
+            current_input = " ".join(reversed(input_buffer))
+            steps.append([current_stack, current_input, action])
             break
 
         current_stack = " ".join(reversed(stack))
@@ -87,7 +97,6 @@ def create_file(steps: list[list[str]], input_filename: str):
         steps (list[list[str]]): The list of parsing steps.
         input_filename (str): The name of the input file to derive the output filename.
     """
-
     output_filename = "test_" + input_filename + ".prsd"
     with open(output_filename, "w", encoding="utf-8") as f:
         for step in steps:
