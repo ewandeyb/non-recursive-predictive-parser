@@ -72,9 +72,15 @@ def create_parsing_steps_table(
                 action = (
                     f"Error: No rule for {top_stack} with lookahead {terminal}"
                 )
+                current_stack = " ".join(reversed(stack))
+                current_input = " ".join(reversed(input_buffer))
+                steps.append([current_stack, current_input, action])
                 break
         else:
             action = f"Error: Unexpected symbol {top_stack}"
+            current_stack = " ".join(reversed(stack))
+            current_input = " ".join(reversed(input_buffer))
+            steps.append([current_stack, current_input, action])
             break
 
         current_stack = " ".join(reversed(stack))
@@ -91,7 +97,6 @@ def create_file(steps: list[list[str]], input_filename: str):
         steps (list[list[str]]): The list of parsing steps.
         input_filename (str): The name of the input file to derive the output filename.
     """
-
     output_filename = "test_" + input_filename + ".prsd"
     with open(output_filename, "w", encoding="utf-8") as f:
         for step in steps:
