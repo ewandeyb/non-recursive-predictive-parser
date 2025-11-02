@@ -6,6 +6,8 @@ productions programmatically.
 
 from tkinter import ttk
 
+from parsers.production_rules import load_prod_rules
+
 
 class ProductionsPanel(ttk.Frame):
     def __init__(self, parent, **kwargs):
@@ -21,7 +23,7 @@ class ProductionsPanel(ttk.Frame):
         self.tree.column("P", width=220, anchor="w")
 
         vsb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscroll=vsb.set)
+        self.tree.configure(yscrollcommand=vsb.set)
 
         self.tree.grid(row=0, column=0, sticky="nsew")
         vsb.grid(row=0, column=1, sticky="ns")
@@ -29,12 +31,17 @@ class ProductionsPanel(ttk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-    def set_productions(self, productions):
-        """Set productions.
+    def load_productions(self, prod_stream):
+        with prod_stream as iostream:
+            self.productions = load_prod_rules(iostream)
 
-        productions should be an iterable of (id, nonterminal, production_text).
-        """
+    def set_productions(self):
+        # clear
         for i in self.tree.get_children():
             self.tree.delete(i)
-        for prod in productions:
-            self.tree.insert("", "end", values=prod)
+
+        for i in range(1, len(self.productions)):
+            prod = self.productions[i]
+            assert prod  # for type checking, prod should never be None
+
+            self.tree.insert("", "end", values=[i, prod.name, prod.rule])
